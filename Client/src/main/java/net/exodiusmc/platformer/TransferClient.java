@@ -2,8 +2,8 @@ package net.exodiusmc.platformer;
 
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.scene.Scene;
 import javafx.stage.Stage;
+import net.exodiusmc.platformer.view.LoginView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +13,10 @@ import java.util.List;
  * @version 1.0.0
  * @since 07/02/2017
  */
-public class PFClient extends Application {
+public class TransferClient extends Application {
+
+    public static double HEIGHT = 800;
+    public static double WIDTH = HEIGHT * 0.7984375;
 
     private Stage main_window;
     private List<Stage> windows;
@@ -24,10 +27,15 @@ public class PFClient extends Application {
         this.windows = new ArrayList<>();
 
         // Configure le main window
+        window.setWidth(WIDTH);
+        window.setHeight(HEIGHT);
+
         setWindowTitle(main_window, null);
 
-        // Open the main window
-        main_window.show();
+        // Configure the window content
+        new LoginView().apply(window);
+
+        window.show();
 
         // Set the exit handler for the window.
         // Sometimes processes can keep the main window

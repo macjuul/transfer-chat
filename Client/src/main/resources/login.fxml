@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.web.WebView?>
+<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="638.75" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <ImageView fitHeight="800.0" fitWidth="638.75" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@/img/bg_login.jpg" />
+         </image>
+      </ImageView>
+      <WebView fx:id="content" maxHeight="801.0" maxWidth="639.0" prefHeight="801.0" prefWidth="639.0" visible="false" />
+   </children>
+</StackPane>
