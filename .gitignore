@@ -1,0 +1,8 @@
+# IDE files
+.idea/
+
+# If you don't use IntelliJ, make sure you
+# put your IDE files here as well.
+
+# Excluded files
+target/
