@@ -54,10 +54,13 @@
          <padding>
             <Insets top="30.0" />
          </padding>
-         <TextField promptText="Enter nickname..." GridPane.rowIndex="1">
+         <TextField fx:id="namefield" promptText="Enter nickname..." GridPane.rowIndex="1">
             <GridPane.margin>
                <Insets />
             </GridPane.margin>
+            <font>
+               <Font size="17.0" />
+            </font>
          </TextField>
          <Label text="Nickname" textFill="WHITE">
             <font>
@@ -66,7 +69,7 @@
          </Label>
       </GridPane>
       <VBox alignment="CENTER" prefHeight="130.0" prefWidth="376.0">
-         <Button fx:id="connect" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" prefHeight="15.0" prefWidth="96.0" text="Connect" textAlignment="CENTER">
+         <Button fx:id="connect" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" prefHeight="42.0" prefWidth="139.0" text="Connect" textAlignment="CENTER">
             <VBox.margin>
                <Insets top="25.0" />
             </VBox.margin>

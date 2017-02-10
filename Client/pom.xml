@@ -4,7 +4,7 @@
 
     <parent>
         <groupId>net.exodiusmc</groupId>
-        <artifactId>platformer</artifactId>
+        <artifactId>transfer</artifactId>
         <version>0.0.1</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
@@ -20,8 +20,34 @@
             <groupId>net.exodiusmc</groupId>
             <artifactId>transfer-Shared</artifactId>
             <version>0.0.1</version>
+            <scope>compile</scope>
         </dependency>
 
     </dependencies>
+
+    <build>
+        <plugins>
+
+            <!-- Shade Netty into le jar -->
+            <!-- Shade plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>2.4.3</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <minimizeJar>true</minimizeJar>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+        </plugins>
+    </build>
     
 </project>
