@@ -1,0 +1,4 @@
+default         localhost           19284
+exodius         exodiusmc.net       19284
+
+dummy           test.com            19284
