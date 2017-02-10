@@ -12,5 +12,16 @@
     <artifactId>transfer-Server</artifactId>
     <version>0.0.1</version>
     <name>Server</name>
+
+    <dependencies>
+
+        <!-- Shared Transfer code -->
+        <dependency>
+            <groupId>net.exodiusmc</groupId>
+            <artifactId>transfer-Shared</artifactId>
+            <version>0.0.1</version>
+        </dependency>
+
+    </dependencies>
     
 </project>
