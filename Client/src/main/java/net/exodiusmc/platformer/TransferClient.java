@@ -20,6 +20,7 @@ public class TransferClient extends Application {
 
     private Stage main_window;
     private List<Stage> windows;
+    private String nickname;
 
     @Override
     public void start(Stage window) throws Exception {
@@ -46,6 +47,35 @@ public class TransferClient extends Application {
             Platform.exit();
             System.exit(0);
         });
+    }
+
+    /**
+     * Disconnect from the current server and
+     * start up a new connection
+     *
+     * @param target Target server
+     */
+    public void connect(Server target) {
+
+    }
+
+    /**
+     * Returns the nickname of the user
+     *
+     * @return String
+     */
+    public String getNickname() {
+        return nickname;
+    }
+
+    /**
+     * Set a new nickname for the user. This method will automatically
+     * forward the nickname change to the server.
+     *
+     * @param nickname String
+     */
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
     }
 
     public static void main(String[] args) {
