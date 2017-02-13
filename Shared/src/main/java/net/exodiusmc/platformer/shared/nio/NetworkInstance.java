@@ -94,6 +94,8 @@ public abstract class NetworkInstance {
 	 * Shut down the NetworkInstance
 	 */
 	public final void stop() {
+		if(!active) return;
+
 		// Set the state to inactive
 		setActive(false);
 

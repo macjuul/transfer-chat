@@ -58,18 +58,17 @@ public class ClientChannelManager extends ChannelManager {
 			NioUtil.nettyLog(client.logger(), "** Channel " + con.channel() +
 				" disconnected: " + packet.getDisconnectMessage());
 		});
-
-		// Call hook
-		callHook(HookType.CONNECTED, connection);
 	}
 
 	@Override
 	public void channelDisconnected(SocketChannel channel) {
-		// Call hook
-		callHook(HookType.DISCONNECTED, connection);
+		PacketConnection conn = this.connection;
 
 		// Nullify the current channel
 		this.connection = null;
+
+		// Call hook
+		callHook(HookType.DISCONNECTED, conn);
 
 		// Reconnect
 		if(client.builder.reconnect) client.reconnect(channel);

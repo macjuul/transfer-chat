@@ -96,10 +96,13 @@ public class NetworkClient extends NetworkInstance {
 				NioUtil.nettyLog(logger(), "NetworkClient is now successfully connected on port " + builder.port);
 				NioUtil.nettyLog(logger(), "Sending client identity... (Using auth: " + (builder.token == null ? "No" : "Yes") + ")");
 
+				// Call hook
+				manager.callHook(HookType.CONNECTED, manager.connection());
+
 				// Mark the Netty instance as active
 				setActive(true);
 
-				// Identitify & Authenticate
+				// Identify & Authenticate
 				NioUtil.nettyLog(logger(), "Authenticating...");
 
 				PacketSystemAuthentication identity = new PacketSystemAuthentication(

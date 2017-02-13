@@ -14,6 +14,7 @@ import net.exodiusmc.platformer.shared.nio.pipeline.OutboundPacketEncoder;
 
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.logging.Level;
 
 /**
  * The Channel Manager takes care of all connected server channel connections. This class
@@ -98,7 +99,11 @@ public abstract class ChannelManager extends ChannelInitializer<SocketChannel> {
 		if(triggers == null || triggers.size() == 0) return false;
 
 		for(Consumer<PacketConnection> conn : triggers) {
-			conn.accept(connection);
+			try {
+				conn.accept(connection);
+			} catch(Exception ex) {
+				parent.logger().log(Level.WARNING, "Exception caught during hook execution", ex);
+			}
 		}
 
 		return true;
