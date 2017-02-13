@@ -4,6 +4,8 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.stage.Stage;
 import net.exodiusmc.platformer.client.view.LoginView;
+import net.exodiusmc.platformer.shared.SharedUtil;
+import net.exodiusmc.platformer.shared.TransferPackets;
 import net.exodiusmc.platformer.shared.nio.client.NetworkClient;
 
 import java.util.ArrayList;
@@ -70,8 +72,8 @@ public class TransferClient extends Application {
         // Create the client
         client = NetworkClient.setup(target.getIp(), target.getPort(), nickname)
 
-                // Register packets
-                .packets(null)
+                .useLogger(SharedUtil.logger())
+                .packets(TransferPackets.list())
 
                 .buildAndStart();
 
@@ -79,7 +81,16 @@ public class TransferClient extends Application {
         remote = target;
     }
 
-    /**
+	/**
+	 * Returns the NetworkClient
+	 *
+	 * @return NetworkClient
+	 */
+	public NetworkClient getNetClient() {
+		return client;
+	}
+
+	/**
      * Returns the nickname of the user
      *
      * @return String

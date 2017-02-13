@@ -68,8 +68,16 @@
             </font>
          </Label>
       </GridPane>
-      <VBox alignment="CENTER" prefHeight="130.0" prefWidth="376.0">
-         <Button fx:id="connect" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" prefHeight="42.0" prefWidth="139.0" text="Connect" textAlignment="CENTER">
+      <VBox alignment="CENTER" prefHeight="0.0" prefWidth="376.0">
+         <Label fx:id="error" textAlignment="CENTER" textFill="#f82121">
+            <font>
+               <Font name="System Bold" size="20.0" />
+            </font>
+            <padding>
+               <Insets top="20.0" />
+            </padding>
+         </Label>
+         <Button fx:id="connect" alignment="CENTER" contentDisplay="CENTER" disable="true" mnemonicParsing="false" prefHeight="42.0" prefWidth="139.0" text="Connect" textAlignment="CENTER">
             <VBox.margin>
                <Insets top="25.0" />
             </VBox.margin>
@@ -77,6 +85,9 @@
                <Font size="19.0" />
             </font>
          </Button>
+         <opaqueInsets>
+            <Insets />
+         </opaqueInsets>
       </VBox>
    </VBox>
 </StackPane>
