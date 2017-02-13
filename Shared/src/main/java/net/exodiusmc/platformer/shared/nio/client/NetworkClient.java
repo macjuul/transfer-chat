@@ -77,6 +77,9 @@ public class NetworkClient extends NetworkInstance {
 		// Disconnect
 		disconnect();
 
+		// Unset the ChannelManager
+		manager = null;
+
 		group.shutdownGracefully();
 	}
 

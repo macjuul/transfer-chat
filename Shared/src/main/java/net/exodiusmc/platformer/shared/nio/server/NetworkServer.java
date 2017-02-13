@@ -88,6 +88,9 @@ public class NetworkServer extends NetworkInstance {
 		// Call hook
 		manager.callHook(HookType.SHUTDOWN, null);
 
+		// Unset the ChannelManager
+		manager = null;
+
 		boss.shutdownGracefully();
 		worker.shutdownGracefully();
 	}
