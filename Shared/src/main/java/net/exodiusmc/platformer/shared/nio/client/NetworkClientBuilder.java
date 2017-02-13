@@ -23,6 +23,7 @@ public class NetworkClientBuilder {
 	protected int port;
 	protected String identity;
 	protected char[] token = null;
+	protected boolean reconnect = false;
 	protected Logger logger = null;
 	protected BiMap<Byte, Class<? extends Packet>> known_packets;
 	protected ListMultimap<HookType, Consumer<PacketConnection>> hooks;
@@ -102,6 +103,16 @@ public class NetworkClientBuilder {
 	 */
 	public NetworkClientBuilder hook(HookType type, Consumer<PacketConnection> hook) {
 		hooks.put(type, hook);
+		return this;
+	}
+
+	/**
+	 * Reconnect the NetworkClient on disconnect
+	 *
+	 * @return self
+	 */
+	public NetworkClientBuilder reconnectOnDisconnect() {
+		this.reconnect = true;
 		return this;
 	}
 

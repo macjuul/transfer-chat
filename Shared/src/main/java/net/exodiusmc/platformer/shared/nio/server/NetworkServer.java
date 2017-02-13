@@ -6,10 +6,7 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import net.exodiusmc.platformer.shared.nio.ChannelManager;
-import net.exodiusmc.platformer.shared.nio.HookType;
-import net.exodiusmc.platformer.shared.nio.NetworkInstance;
-import net.exodiusmc.platformer.shared.nio.NioUtil;
+import net.exodiusmc.platformer.shared.nio.*;
 
 /**
  * The NetworkServer class extends {@link NetworkInstance (Logger)}, and is used to handle
@@ -41,7 +38,7 @@ public class NetworkServer extends NetworkInstance {
 	 *
 	 * @param builder builder used
 	 */
-	protected NetworkServer(NetworkServerBuilder builder) {
+	NetworkServer(NetworkServerBuilder builder) {
 		super("NetworkServer", builder.logger);
 
 		this.builder = builder;
@@ -77,7 +74,7 @@ public class NetworkServer extends NetworkInstance {
 				// Mark the Netty instance as active
 				setActive(true);
 			} else {
-				NioUtil.nettyLog(logger(), "** FAILED TO START THE DATASERVER **");
+				NioUtil.nettyLog(logger(), "** FAILED TO START THE NETWORK SERVER **");
 				NioUtil.nettyLog(logger(), "** NetworkServer failed to bind to port " + builder.port + " **");
 
 				// We couldn't bind, so shutdown
@@ -100,7 +97,7 @@ public class NetworkServer extends NetworkInstance {
 	 *
 	 * @return boolean
 	 */
-	public boolean authEnabled() {
+	public boolean isAuthEnabled() {
 		return builder.token != null;
 	}
 

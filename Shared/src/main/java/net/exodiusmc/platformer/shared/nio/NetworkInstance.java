@@ -35,11 +35,12 @@ public abstract class NetworkInstance {
 	 * Start the NetworkInstance and setup
 	 */
 	public final void start() {
-		NioUtil.nettyLog(logger, "Starting Netty instance '" + displayName() + "'...");
+		NioUtil.nettyLog(logger, "Starting " + displayName());
+		long old = System.currentTimeMillis();
 
 		// Check if already active
 		if(isActive()) {
-			NioUtil.nettyLog(logger, "** FAILED TO START NETTY " + displayName() + " **");
+			NioUtil.nettyLog(logger, "** FAILED TO START " + displayName() + " **");
 			NioUtil.nettyLog(logger, "** This NetworkInstance is already active **");
 			NioUtil.nettyLog(logger, "** Please use shutdown() first before  **");
 			NioUtil.nettyLog(logger, "** re-starting the DataType Instance.      **");
@@ -49,7 +50,8 @@ public abstract class NetworkInstance {
 		// Call the extended initialize() method
 		initialize();
 
-		NioUtil.nettyLog(logger, "Successfully enabled the " + displayName() + " Netty instance");
+		long now = System.currentTimeMillis() - old;
+		NioUtil.nettyLog(logger, "Done! (" + now + "ms) " + displayName() + " is now waiting for connections");
 	}
 
 	/**

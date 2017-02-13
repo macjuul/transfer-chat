@@ -43,9 +43,6 @@ public abstract class ChannelManager extends ChannelInitializer<SocketChannel> {
 
 	@Override
 	protected void initChannel(SocketChannel channel) throws Exception {
-		// Log - setup
-		NioUtil.nettyLog(parent.logger(), "Initializing new channel...");
-		
 		// Setup the codec
 		setupPipeline(channel);
 		
@@ -57,11 +54,11 @@ public abstract class ChannelManager extends ChannelInitializer<SocketChannel> {
 			NioUtil.nettyLog(parent.logger(), "channel successfully disconnected");
 		});
 
+		// Log - complete
+		NioUtil.nettyLog(parent.logger(), "Setting up new connection");
+
 		// Call channel setup
 		setupChannel(channel);
-
-		// Log - complete
-		NioUtil.nettyLog(parent.logger(), "channel successfully setup");
 	}
 
 	/**
@@ -112,9 +109,21 @@ public abstract class ChannelManager extends ChannelInitializer<SocketChannel> {
 	 *
 	 * @param type HookType
 	 * @param handler handler
+	 * @return the handler
 	 */
-	public void registerHook(HookType type, Consumer<PacketConnection> handler) {
+	public Consumer<PacketConnection> registerHook(HookType type, Consumer<PacketConnection> handler) {
 		this.hooks.put(type, handler);
+		return handler;
+	}
+
+	/**
+	 * Unregister a listening hook
+	 * @param type HookType
+	 * @param handler handler
+	 * @return true if successful
+	 */
+	public boolean unregisterHook(HookType type, Consumer<PacketConnection> handler) {
+		return this.hooks.remove(type, handler);
 	}
 
 	/**

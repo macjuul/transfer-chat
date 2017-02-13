@@ -28,7 +28,7 @@ public class ClientChannelManager extends ChannelManager {
 	 *
 	 * @param parent NetworkInstance
 	 */
-	protected ClientChannelManager(NetworkClient parent) {
+	ClientChannelManager(NetworkClient parent) {
 		super(parent, parent.builder.hooks, parent.builder.known_packets);
 
 		this.listeners = new ArrayList<>();
@@ -72,7 +72,7 @@ public class ClientChannelManager extends ChannelManager {
 		this.connection = null;
 
 		// Reconnect
-		client.reconnect(channel);
+		if(client.builder.reconnect) client.reconnect(channel);
 	}
 
 	/**

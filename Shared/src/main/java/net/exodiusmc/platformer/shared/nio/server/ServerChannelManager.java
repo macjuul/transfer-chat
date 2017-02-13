@@ -145,7 +145,7 @@ public class ServerChannelManager extends ChannelManager {
 					RespondablePacket resp_packet = (RespondablePacket) packet;
 					PacketResponseHandler resp_handler = (PacketResponseHandler) handler;
 
-					// Handle the response by a seperate function
+					// Handle the response by a separate function
 					handleResponse(resp_packet, resp_handler, origin);
 				} else {
 					((PacketHandler) handler).receive(packet, origin);
@@ -179,7 +179,7 @@ public class ServerChannelManager extends ChannelManager {
 		}
 
 		// Authentication
-		if(server.authEnabled()) {
+		if(server.isAuthEnabled()) {
 			char[] server_token = server.builder.token;
 			char[] client_token = identity.getAuthToken();
 

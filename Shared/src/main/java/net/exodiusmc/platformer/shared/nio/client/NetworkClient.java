@@ -119,7 +119,7 @@ public class NetworkClient extends NetworkInstance {
 					stop();
 				}
 			} else {
-				NioUtil.nettyLog(logger(), "** Failed to connect to server");
+				NioUtil.nettyLog(logger(), "** FAILED TO CONNECT **");
 			}
 		});
 	}
@@ -131,7 +131,7 @@ public class NetworkClient extends NetworkInstance {
 		// Call hook
 		manager.callHook(HookType.RECONNECT, manager.connection());
 
-		NioUtil.nettyLog(logger(), "** Reconnecting in " + RETRY_DELAY + " seconds");
+		NioUtil.nettyLog(logger(), "Reconnecting in " + RETRY_DELAY + " seconds...");
 
 		channel.eventLoop().schedule(this::connect, RETRY_DELAY, TimeUnit.SECONDS);
 	}
@@ -140,7 +140,8 @@ public class NetworkClient extends NetworkInstance {
 	 * Disconnect from the remote server
 	 */
 	public void disconnect() {
-		manager.connection().disconnect();
+		if(manager.connectionExists())
+			manager.connection().disconnect();
 	}
 
 	/**
