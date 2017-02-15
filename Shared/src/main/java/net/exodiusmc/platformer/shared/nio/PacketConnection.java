@@ -19,6 +19,8 @@ public class PacketConnection {
 	private SocketChannel channel;
 	private String name;
 	private boolean authenticated;
+	protected DisconnectReason disconnect_reason;
+	protected String detailed_reason;
 
 	/**
 	 * Create a new PacketConnection wrapper over the
@@ -30,6 +32,7 @@ public class PacketConnection {
 		this.channel = channel;
 		this.name = "anonymous";
 		this.creation_time = System.currentTimeMillis();
+		this.disconnect_reason = DisconnectReason.NO_REASON;
 	}
 
 	/**
@@ -42,6 +45,7 @@ public class PacketConnection {
 	public PacketConnection(SocketChannel channel, String name) {
 		this.channel = channel;
 		this.name = name;
+		this.disconnect_reason = DisconnectReason.NO_REASON;
 	}
 
 	/**
@@ -90,19 +94,29 @@ public class PacketConnection {
 
 	/**
 	 * Disconnect the connection from the current NetworkInstance
+	 *
+	 * @param reason Disconnect reason
 	 */
-	public void disconnect() {
-		disconnect("Connection closed by remote");
+	public void disconnect(DisconnectReason reason) {
+		channel.writeAndFlush(new PacketSystemDisconnect(reason))
+				.addListener(ChannelFutureListener.CLOSE);
 	}
 
 	/**
 	 * Disconnect the connection from the current NetworkInstance
 	 */
+	public void disconnect() {
+		disconnect(DisconnectReason.NO_REASON);
+	}
+
+	/**
+	 * Disconnect the connection from the current NetworkInstance
+	 *
+	 * @param msg Disconnect message
+	 */
 	public void disconnect(String msg) {
 		channel.writeAndFlush(new PacketSystemDisconnect(msg))
 			.addListener(ChannelFutureListener.CLOSE);
-
-		NioUtil.nettyLog("Channel '" + name + "' disconnected: " + msg);
 	}
 
 	/**
@@ -122,6 +136,25 @@ public class PacketConnection {
 	protected void setAuthenticated(String name) {
 		this.authenticated = true;
 		this.name = name;
+	}
+
+	/**
+	 * Returns the DisconnectReason
+	 *
+	 * @return DisconnectReason. null if still connected
+	 */
+	public DisconnectReason getDisconnectReason() {
+		return disconnect_reason;
+	}
+
+	/**
+	 * Returns a more detailed disconnect reason, only present
+	 * if DisconnectReason is CUSTOM
+	 *
+	 * @return String. null if still connected
+	 */
+	public String getDetailedDisconnectReason() {
+		return detailed_reason;
 	}
 
 	/**

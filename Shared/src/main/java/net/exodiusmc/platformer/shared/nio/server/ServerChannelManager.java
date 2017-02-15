@@ -39,14 +39,6 @@ public class ServerChannelManager extends ChannelManager {
 
 		// Store the NetworkClient
 		server = parent;
-
-		// Disconnect handling
-		subscribe(PacketSystemDisconnect.class, (_packet, con) -> {
-			PacketSystemDisconnect packet = (PacketSystemDisconnect) _packet;
-
-			NioUtil.nettyLog(server.logger(), "** Channel " + con.channel() +
-				" disconnected: " + packet.getDisconnectMessage());
-		});
 	}
 
 	/**

@@ -12,27 +12,66 @@ import io.netty.buffer.ByteBuf;
  */
 public class PacketSystemDisconnect extends Packet {
 
-	private String msg;
+	private DisconnectReason reason;
+	private String detailed;
 
 	public PacketSystemDisconnect() {}
 
-	protected PacketSystemDisconnect(String msg) {
-		this.msg = msg;
+	protected PacketSystemDisconnect(DisconnectReason reason) {
+		this.reason = reason;
 	}
 
-	public String getDisconnectMessage() {
-		return msg;
+	protected PacketSystemDisconnect(String reason) {
+		this.reason = DisconnectReason.CUSTOM;
+		this.detailed = reason;
+	}
+
+	/**
+	 * Returns the reason of the disconnect
+	 *
+	 * @return DisconnectReason
+	 */
+	public DisconnectReason getReason() {
+		return reason;
+	}
+
+	/**
+	 * Returns a more detailed reason to disconnect when the
+	 * reason is CUSTOM
+	 *
+	 * @return Detailed disconnect reason
+	 */
+	public String getDetailed() {
+		return detailed;
+	}
+
+	/**
+	 * Apply the disconnect details to a connection
+	 *
+	 * @param connection PacketConnection to apply to
+	 */
+	public void apply(PacketConnection connection) {
+		connection.disconnect_reason = reason;
+		connection.detailed_reason = detailed;
 	}
 
 	@Override
 	public void encodePayload(ByteBuf buffer) {
-		// Var[String] msg
-		NioUtil.writeString(buffer, msg);
+		// Byte - reason
+		buffer.writeByte(reason.ordinal());
+
+		if(reason == DisconnectReason.CUSTOM) {
+			NioUtil.writeString(buffer, detailed);
+		}
 	}
 
 	@Override
 	public void decodePayload(ByteBuf buffer) {
-		// Var[String] msg
-		this.msg = NioUtil.readString(buffer);
+		// Byte - reason
+		this.reason = DisconnectReason.values()[buffer.readByte()];
+
+		if(reason == DisconnectReason.CUSTOM) {
+			this.detailed = NioUtil.readString(buffer);
+		}
 	}
 }

@@ -55,8 +55,15 @@ public class ClientChannelManager extends ChannelManager {
 		subscribe(PacketSystemDisconnect.class, (_packet, con) -> {
 			PacketSystemDisconnect packet = (PacketSystemDisconnect) _packet;
 
-			NioUtil.nettyLog(client.logger(), "** Channel " + con.channel() +
-				" disconnected: " + packet.getDisconnectMessage());
+			DisconnectReason reason = packet.getReason();
+
+			if(reason == DisconnectReason.CUSTOM) {
+				NioUtil.nettyLog(client.logger(), "** Channel " + con +
+					" disconnected: " + packet.getDetailed() + " **");
+			} else {
+				NioUtil.nettyLog(client.logger(), "** Channel " + con +
+					" disconnected: " + packet.getReason().getMessage() + " **");
+			}
 		});
 	}
 
