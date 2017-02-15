@@ -13,6 +13,7 @@ public enum DisconnectReason {
 	NO_REASON("Connection lost"),
 	IDENTITY_TAKEN("Identity already in use"),
 	AUTH_KEY_WRONG("Failed to authenticate"),
+	AUTH_TIMEOUT("Failed to authenticate in time"),
 	CUSTOM("");
 
 	private String reason;

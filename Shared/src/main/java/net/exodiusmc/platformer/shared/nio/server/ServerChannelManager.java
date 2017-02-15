@@ -166,7 +166,7 @@ public class ServerChannelManager extends ChannelManager {
 		// Check if this identity is already registered
 		if(connections.containsKey(name)) {
 			NioUtil.nettyLog(server.logger(), "** Disconnecting channel: Identity '" + name + "' already identified");
-			conn.disconnect("Identity already connected");
+			conn.disconnect(DisconnectReason.IDENTITY_TAKEN);
 			return;
 		}
 
@@ -182,7 +182,7 @@ public class ServerChannelManager extends ChannelManager {
 				callHook(HookType.AUTHENTICATION_FAILED, conn);
 
 				// Disconnect
-				conn.disconnect("Incorrect authentication key");
+				conn.disconnect(DisconnectReason.AUTH_KEY_WRONG);
 
 				return;
 			}
@@ -237,7 +237,7 @@ public class ServerChannelManager extends ChannelManager {
 				NioUtil.nettyLog(server.logger(), "Client failed to identify after 1 second: Disconnecting");
 
 				// Disconnect
-				connection.disconnect("Identification timeout");
+				connection.disconnect(DisconnectReason.AUTH_TIMEOUT);
 
 				// Remove
 				pending.remove(connection);
