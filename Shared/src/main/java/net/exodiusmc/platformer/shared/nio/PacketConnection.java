@@ -73,7 +73,7 @@ public class PacketConnection {
 	 */
 	public void sendPacket(Packet packet) {
 		// Validate - Nullcheck
-		NioValidate.isNull(packet, "Packet cannot be null");
+		NioUtil.isNull(packet, "Packet cannot be null");
 
 		// Check if the socket channel is valid
 		if(!channel.isActive() || !channel.isOpen()) {

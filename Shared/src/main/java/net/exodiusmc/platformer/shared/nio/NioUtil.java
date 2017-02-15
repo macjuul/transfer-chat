@@ -2,6 +2,7 @@ package net.exodiusmc.platformer.shared.nio;
 
 import io.netty.buffer.ByteBuf;
 import net.exodiusmc.platformer.shared.nio.exception.NioNetworkException;
+import net.exodiusmc.platformer.shared.nio.exception.NioValidationException;
 
 import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
@@ -135,10 +136,86 @@ public class NioUtil {
 	}
 
 	/**
+	 * Returns true when the supplied object is null
+	 *
+	 * @param check Validation check
+	 * @return boolean
+	 */
+	public static boolean isNull(Object check) {
+	    return check == null;
+	}
+
+	/**
+	 * Throws an exception with the specified message
+	 * when the object is null.
+	 *
+	 * @param check Validation check
+	 * @throws NioValidationException when check is null
+	 */
+	public static void isNull(Object check, String error) {
+	    if(check == null) {
+	        throw new NioValidationException("Null check failed: " + error);
+	    }
+	}
+
+	/**
+	* Returns true when the supplied number is less than min, or more than max.
+	* The number boundaries are exclusive.
+	*
+	* @param min Min
+	* @param max Max
+	* @param check Number to check
+	*/
+	public static boolean between(double min, double max, double check) {
+		return min >= check || check >= max;
+	}
+
+	/**
+	* Throws an exception when the supplied number is less than min, or more than max.
+	* The number boundaries are exclusive.
+	*
+	* @param min Min
+	* @param max Max
+	* @param check Number to check
+	* @param error Error message to throw
+	*/
+	public static void between(double min, double max, double check, String error) {
+		if(min >= check || check >= max) {
+			throw new NioValidationException("Number range check failed: " + error);
+		}
+	}
+
+	/**
+	* Returns true when the supplied number is less than min, or more than max.
+	* The number boundaries are inclusive.
+	*
+	* @param min Min
+	* @param max Max
+	* @param check Number to check
+	*/
+	public static boolean betweenInc(double min, double max, double check) {
+		return min > check || check > max;
+	}
+
+	/**
+	* Throws an exception when the supplied number is less than min, or more than max.
+	* The number boundaries are inclusive.
+	*
+	* @param min Min
+	* @param max Max
+	* @param check Number to check
+	* @param error Error message to throw
+	*/
+	public static void betweenInc(double min, double max, double check, String error) {
+		if(min > check || check > max) {
+			throw new NioValidationException("Number range check failed: " + error);
+		}
+	}
+
+	/**
 	 * Represents a log made regarding the network protocol
 	 */
 	public static class LogLevel extends Level {
-
 		public LogLevel(String name, int value) {
 			super(name, value);
 		}

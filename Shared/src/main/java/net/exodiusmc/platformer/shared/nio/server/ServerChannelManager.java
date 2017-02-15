@@ -2,7 +2,7 @@ package net.exodiusmc.platformer.shared.nio.server;
 
 import io.netty.channel.socket.SocketChannel;
 import net.exodiusmc.platformer.shared.nio.ChannelManager;
-import net.exodiusmc.platformer.shared.nio.NioValidate;
+import net.exodiusmc.platformer.shared.nio.NioUtil;
 import net.exodiusmc.platformer.shared.nio.PacketConnection;
 
 /**
@@ -49,7 +49,7 @@ public class ServerChannelManager extends ChannelManager {
 		}
 
 		// Check if we did actually find the name
-		NioValidate.isNull(disconnected, "Unknown channel disconnected");
+		NioUtil.isNull(disconnected, "Unknown channel disconnected");
 
 		server.disconnectConnection(disconnected);
 	}

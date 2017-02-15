@@ -135,7 +135,7 @@ public class NetworkServer extends NetworkInstance {
 	@Override
 	protected void disconnectConnection(PacketConnection disconnected) {
 		// Check if we did actually find the name
-		NioValidate.isNull(disconnected, "Unknown channel disconnected");
+		NioUtil.isNull(disconnected, "Unknown channel disconnected");
 
 		NioUtil.nettyLog(logger(), "Channel '" + disconnected.getName() + "' disconnected");
 

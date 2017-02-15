@@ -37,14 +37,14 @@ public class InboundPacketDecoder extends ByteToMessageDecoder {
 		Class<? extends Packet> type = net_instance.getPackets().get(id);
 
 		// Validate - check if packet type is null
-		NioValidate.isNull(type, "[PACKET] Received unknown packet id '" + id +
+		NioUtil.isNull(type, "[PACKET] Received unknown packet id '" + id +
 		"'. Make sure this packet has been registered during NetworkInstance building.");
 
 		// Create the (empty) packet
 		Packet packet = Packet.create(type);
 
 		// Validate - check if packet is null
-		NioValidate.isNull(packet, "Packet is null");
+		NioUtil.isNull(packet, "Packet is null");
 
 		// Check if the packet is a respondable packet
 		if(packet instanceof RespondablePacket) {

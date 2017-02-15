@@ -25,7 +25,7 @@ public class OutboundPacketEncoder extends MessageToByteEncoder<Packet> {
 	@Override
 	protected void encode(ChannelHandlerContext ctx, Packet packet, ByteBuf buffer) throws Exception {
 		// Validate - check if packet type is null
-		NioValidate.isNull(packet, "Cannot send null packet");
+		NioUtil.isNull(packet, "Cannot send null packet");
 
 		// Get a ref to all packets and their ids
 		BiMap<Class<? extends Packet>, Byte> packets = net_instance.getPackets().inverse();
@@ -33,7 +33,7 @@ public class OutboundPacketEncoder extends MessageToByteEncoder<Packet> {
 		Class<? extends Packet> clazz = packet.getClass();
 
 		// Validate - check if id is null
-		if(NioValidate.isNull(packets.get(clazz))) {
+		if(NioUtil.isNull(packets.get(clazz))) {
 			NioUtil.nettyLog("[WARNING] Attempted to send unknown packet '" + packet.getClass().getSimpleName() +
 				". Make sure this packet has been registered during NetworkInstance building.");
 			return;
