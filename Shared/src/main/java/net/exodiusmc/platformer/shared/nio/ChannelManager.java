@@ -1,7 +1,5 @@
 package net.exodiusmc.platformer.shared.nio;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.ListMultimap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -11,10 +9,6 @@ import io.netty.handler.codec.LengthFieldPrepender;
 import net.exodiusmc.platformer.shared.nio.pipeline.InboundPacketDecoder;
 import net.exodiusmc.platformer.shared.nio.pipeline.InboundTriggerHandler;
 import net.exodiusmc.platformer.shared.nio.pipeline.OutboundPacketEncoder;
-
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.logging.Level;
 
 /**
  * The Channel Manager takes care of all connected server channel connections. This class
@@ -27,24 +21,19 @@ import java.util.logging.Level;
 public abstract class ChannelManager extends ChannelInitializer<SocketChannel> {
 
 	private NetworkInstance parent;
-	private BiMap<Byte, Class<? extends Packet>> packets;
-	private ListMultimap<HookType, Consumer<PacketConnection>> hooks;
 
 	/**
 	 * Create a new ChannelManager for the given NetworkInstance
 	 *
-	 * @param parent NetworkInstance
-	 * @param hooks Hook Multimap
+	 * @param parent Parent NetworkInstance
 	 */
-	public ChannelManager(NetworkInstance parent, ListMultimap<HookType, Consumer<PacketConnection>> hooks, BiMap<Byte, Class<? extends Packet>> packets) {
+	public ChannelManager(NetworkInstance parent) {
 		this.parent = parent;
-		this.hooks = hooks;
-		this.packets = packets;
 	}
 
 	@Override
 	protected void initChannel(SocketChannel channel) throws Exception {
-		// Setup the codec
+		// Setup the pipeline
 		setupPipeline(channel);
 		
 		// Set the disconnect handling
@@ -72,81 +61,17 @@ public abstract class ChannelManager extends ChannelInitializer<SocketChannel> {
 
 		// Decoders
 		pipe.addLast("LengthDecoder", new LengthFieldBasedFrameDecoder(10000, 0, 4, 0, 4));
-		pipe.addLast("InboundPacketDecoder", new InboundPacketDecoder(this));
+		pipe.addLast("InboundPacketDecoder", new InboundPacketDecoder(parent));
 
 		// Encoders
 		pipe.addLast("LengthEncoder", new LengthFieldPrepender(4));
-		pipe.addLast("OutboundPacketEncoder", new OutboundPacketEncoder(this));
+		pipe.addLast("OutboundPacketEncoder", new OutboundPacketEncoder(parent));
 
 		// The InboundTrigger channel handler will be called
 		// with a finished Packet object. The channel will
-		// tigger all subscribed listeners who are listening
+		// trigger all subscribed listeners who are listening
 		// for the packet.
-		pipe.addLast("InboundTrigger", new InboundTriggerHandler(this));
-	}
-
-	/**
-	 * Call all registered hooks of the specified HookType
-	 *
-	 * @param type HookType
-	 * @param connection PacketConnection
-	 * @return true when at least one hook was triggered
-	 */
-	public boolean callHook(HookType type, PacketConnection connection) {
-		List<Consumer<PacketConnection>> triggers = hooks.get(type);
-
-		// Return if none are hooked
-		if(triggers == null || triggers.size() == 0) return false;
-
-		for(Consumer<PacketConnection> conn : triggers) {
-			try {
-				conn.accept(connection);
-			} catch(Exception ex) {
-				parent.logger().log(Level.WARNING, "Exception caught during hook execution", ex);
-			}
-		}
-
-		return true;
-	}
-
-	/**
-	 * Register a new hook
-	 *
-	 * @param type HookType
-	 * @param handler handler
-	 * @return the handler
-	 */
-	public Consumer<PacketConnection> registerHook(HookType type, Consumer<PacketConnection> handler) {
-		this.hooks.put(type, handler);
-		return handler;
-	}
-
-	/**
-	 * Unregister a listening hook
-	 * @param type HookType
-	 * @param handler handler
-	 * @return true if successful
-	 */
-	public boolean unregisterHook(HookType type, Consumer<PacketConnection> handler) {
-		return this.hooks.remove(type, handler);
-	}
-
-	/**
-	 * Returns a BiMap of packets
-	 *
-	 * @return Packets
-	 */
-	public BiMap<Byte, Class<? extends Packet>> getPackets() {
-		return packets;
-	}
-
-	/**
-	 * Returns the parenting NetworkInstance
-	 *
-	 * @return NetworkInstance
-	 */
-	public NetworkInstance getParent() {
-		return parent;
+		pipe.addLast("InboundTrigger", new InboundTriggerHandler(parent));
 	}
 
 	/**

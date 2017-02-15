@@ -8,7 +8,13 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import net.exodiusmc.platformer.shared.nio.*;
+import net.exodiusmc.platformer.shared.nio.exception.NioNetworkException;
+import net.exodiusmc.platformer.shared.nio.handler.PacketHandler;
+import net.exodiusmc.platformer.shared.nio.handler.PacketHandlerInterface;
+import net.exodiusmc.platformer.shared.nio.handler.PacketResponseHandler;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -36,6 +42,8 @@ public class NetworkClient extends NetworkInstance {
 	protected NetworkClientBuilder builder;
 	protected boolean identified;
 
+	private PacketConnection connection;
+	private List<PacketListener> listeners;
 	private ClientChannelManager manager;
 	private Bootstrap bootstrap;
 
@@ -45,9 +53,21 @@ public class NetworkClient extends NetworkInstance {
 	 * @param builder builder used
 	 */
 	protected NetworkClient(NetworkClientBuilder builder) {
-		super("NetworkClient", builder.logger);
+		super("NetworkClient", builder.logger, builder.known_packets, builder.hooks);
 
+		this.listeners = new ArrayList<>();
 		this.builder = builder;
+
+		// Check for IdentitySuccess
+		subscribe(PacketSystemAuthenticationSuccess.class, (packet, conn) -> {
+			NioUtil.nettyLog(logger(), "Successfully conected to NetworkServer as '" + builder.identity + "'");
+
+			// Mark connection as authenticated
+			ChannelManager.identifyConnection(connection, builder.identity);
+
+			// Call hook
+			callHook(HookType.AUTHENTICATION_ACCEPTED, connection);
+		});
 	}
 
 	@Override
@@ -72,7 +92,7 @@ public class NetworkClient extends NetworkInstance {
 	@Override
 	protected void onShutdown() {
 		// Call hook
-		manager.callHook(HookType.SHUTDOWN, manager.connection());
+		callHook(HookType.SHUTDOWN, connection());
 
 		// Disconnect
 		disconnect();
@@ -82,6 +102,37 @@ public class NetworkClient extends NetworkInstance {
 
 		group.shutdownGracefully();
 	}
+
+	@Override
+	protected void setupConnection(PacketConnection connection) {
+		// Disconnect handling
+		subscribe(PacketSystemDisconnect.class, (_packet, con) -> {
+			PacketSystemDisconnect packet = (PacketSystemDisconnect) _packet;
+
+			DisconnectReason reason = packet.getReason();
+
+			if(reason == DisconnectReason.CUSTOM) {
+				NioUtil.nettyLog(logger(), "** Channel " + con +
+						" disconnected: " + packet.getDetailed() + " **");
+			} else {
+				NioUtil.nettyLog(logger(), "** Channel " + con +
+						" disconnected: " + packet.getReason().getMessage() + " **");
+			}
+		});
+	}
+
+	@Override
+	protected void disconnectConnection(PacketConnection disconnected) {
+		// Call hook
+		callHook(HookType.DISCONNECTED, connection);
+
+		// Nullify the connection
+		connection = null;
+
+		// Reconnect
+		if(builder.reconnect) reconnect(disconnected.channel());
+	}
+
 
 	/**
 	 * Attempts to connect to the remote DataType Server. If the connection or identification fails,
@@ -97,7 +148,7 @@ public class NetworkClient extends NetworkInstance {
 				NioUtil.nettyLog(logger(), "Sending client identity... (Using auth: " + (builder.token == null ? "No" : "Yes") + ")");
 
 				// Call hook
-				manager.callHook(HookType.CONNECTED, manager.connection());
+				callHook(HookType.CONNECTED, connection());
 
 				// Mark the Netty instance as active
 				setActive(true);
@@ -111,16 +162,16 @@ public class NetworkClient extends NetworkInstance {
 				);
 
 				// Call hook
-				manager.callHook(HookType.AUTHENTICATION, manager.connection());
+				callHook(HookType.AUTHENTICATION, connection());
 
 				// Send the packet
 				try {
-					manager.connection().sendPacket(identity);
+					connection().sendPacket(identity);
 				} catch(Exception ex) {
 					NioUtil.nettyLog(logger(), "Failed to send Identity & Authentication packet!", ex);
 
 					// Call hook
-					manager.callHook(HookType.AUTHENTICATION_FAILED, manager.connection());
+					callHook(HookType.AUTHENTICATION_FAILED, connection());
 
 					stop();
 				}
@@ -135,7 +186,7 @@ public class NetworkClient extends NetworkInstance {
 	 */
 	protected void reconnect(Channel channel) {
 		// Call hook
-		manager.callHook(HookType.RECONNECT, manager.connection());
+		callHook(HookType.RECONNECT, connection());
 
 		NioUtil.nettyLog(logger(), "Reconnecting in " + RETRY_DELAY + " seconds...");
 
@@ -146,8 +197,152 @@ public class NetworkClient extends NetworkInstance {
 	 * Disconnect from the remote server
 	 */
 	public void disconnect() {
-		if(manager.connectionExists())
-			manager.connection().disconnect();
+		if(connectionExists())
+			connection().disconnect();
+	}
+
+	/**
+	 * Subscribe a listener of the specified arguments
+	 *
+	 * @param type Class<? extends Packet>
+	 * @param handler Listener
+	 * @return ServerPacketListener
+	 */
+	public PacketListener subscribe(Class<? extends Packet> type, PacketHandler handler) {
+		PacketListener listener = new PacketListener(type, handler);
+
+		listeners.add(listener);
+
+		return listener;
+	}
+
+	/**
+	 * Subscribe a listener of the specified arguments
+	 *
+	 * @param types Packet Types
+	 * @param handler Handler
+	 * @return ServerPacketListener
+	 */
+	public PacketListener subscribe(List<Class<? extends Packet>> types, PacketHandler handler) {
+		PacketListener listener = new PacketListener(types, handler);
+
+		listeners.add(listener);
+
+		return listener;
+	}
+
+	/**
+	 * Subscribe a listener of the specified arguments
+	 *
+	 * @param type Class<? extends Packet>
+	 * @param handler Listener
+	 * @return ServerPacketListener
+	 */
+	public PacketListener subscribeRespondable(Class<? extends Packet> type, PacketResponseHandler handler) {
+		PacketListener listener = new PacketListener(type, handler);
+
+		listeners.add(listener);
+
+		return listener;
+	}
+
+	/**
+	 * Subscribe a listener of the specified arguments
+	 *
+	 * @param types Packet Types
+	 * @param handler Handler
+	 * @return ServerPacketListener
+	 */
+	public PacketListener subscribeRespondable(List<Class<? extends Packet>> types, PacketResponseHandler handler) {
+		PacketListener listener = new PacketListener(types, handler);
+
+		listeners.add(listener);
+
+		return listener;
+	}
+
+	/**
+	 * Unsubscribe a listener
+	 *
+	 * @param listener ServerPacketListener
+	 */
+	public void unsubscribe(PacketListener listener) {
+		listeners.remove(listener);
+	}
+
+	/**
+	 * Trigger bound listeners listening to the given packet
+	 *
+	 * @param packet Packet
+	 */
+	public void triggerListeners(Packet packet) {
+		// Get the packet type
+		Class<? extends Packet> type = packet.getClass();
+
+		// Call listeners
+		for(PacketListener listener : listeners) {
+			if(listener.getSubscribed().contains(type)) {
+				PacketHandlerInterface handler = listener.getHandler();
+
+				if(handler instanceof PacketResponseHandler) {
+					// Validate - check if the inbound packet is
+					// actually a respondable packet
+					// if not, this means
+					if(!(packet instanceof RespondablePacket)) {
+						throw new NioNetworkException("Could not handle response: Inbound packet"
+								+ "is not a respondable packet");
+					}
+
+					// Cast fields to their respondable counterparts
+					RespondablePacket resp_packet = (RespondablePacket) packet;
+					PacketResponseHandler resp_handler = (PacketResponseHandler) handler;
+
+					// Handle the response by a seperate function
+					handleResponse(resp_packet, resp_handler);
+
+					return;
+				}
+
+				((PacketHandler) handler).receive(packet, connection);
+
+				return;
+			}
+		}
+	}
+
+	/**
+	 * Handle a respondable packet response
+	 *
+	 * @param packet RespondablePacket
+	 * @param handler Handler
+	 */
+	private void handleResponse(RespondablePacket packet, PacketResponseHandler handler) {
+		// Generate a response
+		handler.receive(packet, connection);
+
+		// Mark the packet as a response
+		packet.markAsResponse();
+
+		// Send
+		connection.sendPacket(packet);
+	}
+
+	/**
+	 * Returns the PacketConnection that is currently active
+	 *
+	 * @return PacketConnection
+	 */
+	public PacketConnection connection() {
+		return connection;
+	}
+
+	/**
+	 * Returns true when the connection exists
+	 *
+	 * @return boolean
+	 */
+	public boolean connectionExists() {
+		return connection != null;
 	}
 
 	/**

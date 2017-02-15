@@ -3,8 +3,8 @@ package net.exodiusmc.platformer.shared.nio.pipeline;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import net.exodiusmc.platformer.shared.nio.*;
-import net.exodiusmc.platformer.shared.nio.client.ClientChannelManager;
-import net.exodiusmc.platformer.shared.nio.server.ServerChannelManager;
+import net.exodiusmc.platformer.shared.nio.client.NetworkClient;
+import net.exodiusmc.platformer.shared.nio.server.NetworkServer;
 
 import java.util.function.Consumer;
 import java.util.logging.Logger;
@@ -18,10 +18,10 @@ import java.util.logging.Logger;
  */
 public class InboundTriggerHandler extends ChannelInboundHandlerAdapter {
 
-	private ChannelManager manager;
+	private NetworkInstance net_instance;
 
-	public InboundTriggerHandler(ChannelManager manager) {
-		this.manager = manager;
+	public InboundTriggerHandler(NetworkInstance net_instance) {
+		this.net_instance = net_instance;
 	}
 
 	@Override
@@ -42,38 +42,38 @@ public class InboundTriggerHandler extends ChannelInboundHandlerAdapter {
 		}
 
 		// NORMAL PACKETS
-		if(manager instanceof ClientChannelManager) {
+		if(net_instance instanceof NetworkClient) {
 			// Trigger - client
-			((ClientChannelManager) manager).triggerListeners(packet);
-		} else if(manager instanceof ServerChannelManager) {
-			ServerChannelManager mngr = (ServerChannelManager) manager;
+			((NetworkClient) net_instance).triggerListeners(packet);
+		} else if(net_instance instanceof NetworkServer) {
+			NetworkServer server = (NetworkServer) net_instance;
 
 			// Get the connection from the current channel
-			PacketConnection origin = mngr.connection(ctx.channel());
+			PacketConnection origin = server.connection(ctx.channel());
 
 			// Identity - Validate incoming identity packet
 			if(packet instanceof PacketSystemAuthentication) {
 				//noinspection ConstantConditions
-				mngr.identify(origin, (PacketSystemAuthentication) packet);
+				server.identify(origin, (PacketSystemAuthentication) packet);
 				return;
 			} else if(!origin.isAuthenticated()) {
 				// When the client is not authenticated, and tried to send
 				// a non-auth packet, ignore and log
-				NioUtil.nettyLog(manager.getParent().logger(), "[WARNING] Received non-auth packet from unauthenticated server!");
+				NioUtil.nettyLog(net_instance.logger(), "[WARNING] Received non-auth packet from unauthenticated server!");
 				return;
 			}
 
 			// Triger - server
-			mngr.triggerListeners(packet, origin);
+			server.triggerListeners(packet, origin);
 		}
 	}
 
 	@Override
 	public void exceptionCaught(ChannelHandlerContext ctx, Throwable e) {
-		Logger log = manager.getParent().logger();
+		Logger log = net_instance.logger();
 
 		// Log the exception
-		NioUtil.nettyLog(log, "[PACKET] [SEVERE] Exception corrured during PacketDecoding (Trigger) " + e.getCause().getMessage()
+		NioUtil.nettyLog(log, "[PACKET] [SEVERE] Exception occurred during PacketDecoding (Trigger) " + e.getCause().getMessage()
 			+ ". Closing channel " + ctx.channel().id());
 		e.printStackTrace();
 	}

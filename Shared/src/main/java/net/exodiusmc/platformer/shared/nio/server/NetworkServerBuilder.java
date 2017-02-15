@@ -110,7 +110,6 @@ public class NetworkServerBuilder {
 	/**
 	 * <i>Shortcut method.</i><br>
 	 * Builds the NetworkServer with {@link #build()} and
-	 * calls {@link net.exodiusmc.shared.nio.NetworkInstance#start()}
 	 *
 	 * @return NetworkServer
 	 */

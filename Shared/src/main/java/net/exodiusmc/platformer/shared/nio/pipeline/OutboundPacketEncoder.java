@@ -16,10 +16,10 @@ import java.util.logging.Logger;
  */
 public class OutboundPacketEncoder extends MessageToByteEncoder<Packet> {
 
-	private ChannelManager manager;
+	private NetworkInstance net_instance;
 
-	public OutboundPacketEncoder(ChannelManager manager) {
-		this.manager = manager;
+	public OutboundPacketEncoder(NetworkInstance net_instance) {
+		this.net_instance = net_instance;
 	}
 
 	@Override
@@ -28,7 +28,7 @@ public class OutboundPacketEncoder extends MessageToByteEncoder<Packet> {
 		NioValidate.isNull(packet, "Cannot send null packet");
 
 		// Get a ref to all packets and their ids
-		BiMap<Class<? extends Packet>, Byte> packets = manager.getPackets().inverse();
+		BiMap<Class<? extends Packet>, Byte> packets = net_instance.getPackets().inverse();
 
 		Class<? extends Packet> clazz = packet.getClass();
 
@@ -60,7 +60,7 @@ public class OutboundPacketEncoder extends MessageToByteEncoder<Packet> {
 				// Encode the packet as response
 				respondable.encodeResponse(buffer);
 
-				NioUtil.nettyLog(manager.getParent().logger(), "[PACKET] Sending response packet (" + packet.getClass().getSimpleName() + ")");
+				NioUtil.nettyLog(net_instance.logger(), "[PACKET] Sending response packet (" + packet.getClass().getSimpleName() + ")");
 
 
 				return; // <-- We are done encoding
@@ -82,7 +82,7 @@ public class OutboundPacketEncoder extends MessageToByteEncoder<Packet> {
 		try {
 			packet.encodePayload(buffer);
 
-			NioUtil.nettyLog(manager.getParent().logger(), "[PACKET] Sending " + packet.getClass().getSimpleName() + " packet (size=" + (buffer.readableBytes() - 1) + ",id=" + id + ")");
+			NioUtil.nettyLog(net_instance.logger(), "[PACKET] Sending " + packet.getClass().getSimpleName() + " packet (size=" + (buffer.readableBytes() - 1) + ",id=" + id + ")");
 		} catch(NullPointerException ex) {
 			throw new NioNetworkException("Encountered null field whilst encoding payload for "
 				+ packet.getClass().getSimpleName() + " packet. This might be caused by a packet"
@@ -92,7 +92,7 @@ public class OutboundPacketEncoder extends MessageToByteEncoder<Packet> {
 
 	@Override
 	public void exceptionCaught(ChannelHandlerContext ctx, Throwable e) {
-		Logger log = manager.getParent().logger();
+		Logger log = net_instance.logger();
 
 		try {
 			// Log the exception

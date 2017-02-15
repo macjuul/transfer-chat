@@ -16,10 +16,10 @@ import java.util.logging.Logger;
  */
 public class InboundPacketDecoder extends ByteToMessageDecoder {
 
-	private ChannelManager manager;
+	private NetworkInstance net_instance;
 
-	public InboundPacketDecoder(ChannelManager manager) {
-		this.manager = manager;
+	public InboundPacketDecoder(NetworkInstance net_instance) {
+		this.net_instance = net_instance;
 	}
 
 	@Override
@@ -31,10 +31,10 @@ public class InboundPacketDecoder extends ByteToMessageDecoder {
 		// Read the packet type byte
 		byte id = buffer.readByte();
 
-		NioUtil.nettyLog(manager.getParent().logger(), "[PACKET] Received packet (size=" + buffer.readableBytes() + ",id=" + id + ")");
+		NioUtil.nettyLog(net_instance.logger(), "[PACKET] Received packet (size=" + buffer.readableBytes() + ",id=" + id + ")");
 
 		// Get the PacketType
-		Class<? extends Packet> type = manager.getPackets().get(id);
+		Class<? extends Packet> type = net_instance.getPackets().get(id);
 
 		// Validate - check if packet type is null
 		NioValidate.isNull(type, "[PACKET] Received unknown packet id '" + id +
@@ -68,7 +68,7 @@ public class InboundPacketDecoder extends ByteToMessageDecoder {
 			try {
 				packet.decodePayload(buffer);
 			} catch(DecoderException ex) {
-				NioUtil.nettyLog(manager.getParent().logger(), "[SEVERE] Failed to decode " + type.getSimpleName() + " packet", ex);
+				NioUtil.nettyLog(net_instance.logger(), "[SEVERE] Failed to decode " + type.getSimpleName() + " packet", ex);
 			}
 		}
 
@@ -78,11 +78,11 @@ public class InboundPacketDecoder extends ByteToMessageDecoder {
 
 	@Override
 	public void exceptionCaught(ChannelHandlerContext ctx, Throwable e) {
-		Logger log = manager.getParent().logger();
+		Logger log = net_instance.logger();
 
 		try {
 			// Log the exception
-			NioUtil.nettyLog(log, "[PA[SEVERE] Exception corrured during PacketDecoding " + e.getCause().getMessage()
+			NioUtil.nettyLog(log, "[PA[SEVERE] Exception occurred during PacketDecoding " + e.getCause().getMessage()
 				+ ". Closing channel " + ctx.channel().id());
 
 			// Close the channel
