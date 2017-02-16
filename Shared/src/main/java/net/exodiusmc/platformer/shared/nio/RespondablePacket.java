@@ -19,27 +19,29 @@ public abstract class RespondablePacket extends Packet {
 	private static Map<Byte, Consumer<Packet>> handlers = new HashMap<>();
 
 	private Consumer<Packet> response_handler;
-	private boolean response = false;
+	private boolean is_response = false;
 	private byte resp_id;
 
-	public RespondablePacket() {}
+	public RespondablePacket() {
+
+	}
 
 	/**
-	 * Encode the response to bytes
+	 * Returns the Request Tracker
 	 *
-	 * @param buffer Buffer
+	 * @return RespondableTracker
 	 */
-	public abstract void encodeResponse(ByteBuf buffer);
+	public abstract RespondableTracker getRequest();
 
 	/**
-	 * Decode the response from bytes
+	 * Returns the Response Tracker
 	 *
-	 * @param buffer Buffer
+	 * @return RespondableTracker
 	 */
-	public abstract void decodeResponse(ByteBuf buffer);
+	public abstract RespondableTracker getResponse();
 
 	/**
-	 * Set the response handler
+	 * Set the is_response handler
 	 *
 	 * @param response_handler Response Handler
 	 */
@@ -49,7 +51,7 @@ public abstract class RespondablePacket extends Packet {
 	}
 
 	/**
-	 * Returns the response handler
+	 * Returns the is_response handler
 	 *
 	 * @return Consumah
 	 */
@@ -58,23 +60,23 @@ public abstract class RespondablePacket extends Packet {
 	}
 
 	/**
-	 * Marks this respondable packet as a response
+	 * Marks this respondable packet as a is_response
 	 */
 	public void markAsResponse() {
-		this.response = true;
+		this.is_response = true;
 	}
 
 	/**
-	 * Returns true when this Respondable Packet is a response
+	 * Returns true when this Respondable Packet is a is_response
 	 *
 	 * @return boolean
 	 */
-	public boolean isResponse() {
-		return response;
+	public boolean IsResponse() {
+		return is_response;
 	}
 
 	/**
-	 * Set the response id
+	 * Set the is_response id
 	 *
 	 * @param id id
 	 */
@@ -83,7 +85,7 @@ public abstract class RespondablePacket extends Packet {
 	}
 
 	/**
-	 * Returns the response id of this packet
+	 * Returns the is_response id of this packet
 	 *
 	 * @return Response ID
 	 */
@@ -102,8 +104,26 @@ public abstract class RespondablePacket extends Packet {
 		return SendRule.BOTH;
 	}
 
+	@Override
+	public final void encodePayload(ByteBuf buffer) {
+		if(is_response) {
+			getResponse().encodePayload(buffer);
+		} else {
+			getRequest().encodePayload(buffer);
+		}
+	}
+
+	@Override
+	public final void decodePayload(ByteBuf buffer) {
+		if(is_response) {
+			getResponse().decodePayload(buffer);
+		} else {
+			getRequest().decodePayload(buffer);
+		}
+	}
+
 	/**
-	 * Store a response handler
+	 * Store a is_response handler
 	 *
 	 * @param id Id
 	 * @param handler Packet handler

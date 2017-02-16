@@ -35,7 +35,7 @@ public class InboundTriggerHandler extends ChannelInboundHandlerAdapter {
 			// Only response handlers will be handled by this code. The
 			// actual respondable payload handlers are handled
 			// seperately in the ChannelManager classes.
-			if(resp_packet.isResponse()) {
+			if(resp_packet.IsResponse()) {
 				handleResponse(resp_packet);
 				return;
 			}

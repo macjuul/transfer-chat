@@ -3,6 +3,7 @@ package net.exodiusmc.platformer.shared.packets;
 import io.netty.buffer.ByteBuf;
 import net.exodiusmc.platformer.shared.nio.NioUtil;
 import net.exodiusmc.platformer.shared.nio.RespondablePacket;
+import net.exodiusmc.platformer.shared.nio.RespondableTracker;
 
 /**
  * Send a chat packet to the server. A response will be
@@ -24,28 +25,34 @@ public class ChatSendPacket extends RespondablePacket {
 
     public ChatSendPacket() {}
 
-    public ChatSendPacket(String msg) {
+	@Override
+	public RespondableTracker getRequest() {
+		return null;
+	}
+
+	@Override
+	public RespondableTracker getResponse() {
+		return null;
+	}
+
+	public ChatSendPacket(String msg) {
         this.msg = msg;
     }
 
-    @Override
     public void encodeResponse(ByteBuf buffer) {
 
     }
 
-    @Override
     public void decodeResponse(ByteBuf buffer) {
 
     } 
 
-    @Override
-    public void encodePayload(ByteBuf buffer) {
+    public void encodePayloadZ(ByteBuf buffer) {
         // msg
         NioUtil.writeString(buffer, msg);
     }
 
-    @Override
-    public void decodePayload(ByteBuf buffer) {
+    public void decodePayloadZ(ByteBuf buffer) {
         // msg
         this.msg = NioUtil.readString(buffer);
     }

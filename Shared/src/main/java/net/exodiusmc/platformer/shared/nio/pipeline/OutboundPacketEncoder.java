@@ -50,7 +50,7 @@ public class OutboundPacketEncoder extends MessageToByteEncoder<Packet> {
 			RespondablePacket respondable = (RespondablePacket) packet;
 
 			// Check if this packet is a response
-			if(respondable.isResponse()) {
+			if(respondable.IsResponse()) {
 				// Write the response id
 				buffer.writeByte(respondable.getResponseId());
 

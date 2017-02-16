@@ -3,17 +3,17 @@ package net.exodiusmc.platformer.client.view;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import net.exodiusmc.platformer.client.Server;
 import net.exodiusmc.platformer.client.TransferClient;
 import net.exodiusmc.platformer.shared.nio.HookType;
 import net.exodiusmc.platformer.shared.nio.PacketConnection;
-import net.exodiusmc.platformer.shared.nio.client.ClientChannelManager;
 import net.exodiusmc.platformer.shared.nio.client.NetworkClient;
+import net.exodiusmc.platformer.shared.packets.RespondableTest;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -38,9 +38,6 @@ public class LoginView implements View {
 
     @FXML
     private TextField namefield;
-
-    @FXML
-    private Label error;
 
     @Override
     public void apply(Stage window) {
@@ -67,6 +64,8 @@ public class LoginView implements View {
             n++;
         }
 
+        new RespondableTest().getRequest().encodePayload(null);
+
         // Set the default selected item
         server_list.getSelectionModel().select(0);
 
@@ -74,7 +73,6 @@ public class LoginView implements View {
         connect.setOnMouseClicked(e -> {
         	// Disable button
 	        connect.setDisable(true);
-	        error.setText("");
 
             // Get the server
             int selected_server = server_list.getSelectionModel().getSelectedIndex();
@@ -93,22 +91,24 @@ public class LoginView implements View {
 
             // Register hooks
 	        NetworkClient net = client.getNetClient();
-	        ClientChannelManager mngr = net.channelManager();
 
-	        Consumer<PacketConnection> fail = mngr.registerHook(HookType.DISCONNECTED, conn -> {
-		        Platform.runLater(() -> {
-			        // Display an error
-			        error.setText("Connection refused: Failed to connect");
+	        Consumer<PacketConnection> fail = net.registerHook(HookType.DISCONNECTED, conn -> Platform.runLater(() -> {
+		        // Display an error
+		        Alert alert = new Alert(Alert.AlertType.ERROR);
+		        alert.setTitle("Transfer error");
+		        alert.setHeaderText("Connection refused");
+		        alert.setContentText("Could not connect to remote. The server might be offline right now. Try again later!");
 
-			        // Shutdown the client
-			        net.stop();
+		        alert.showAndWait();
 
-			        // Enable button
-			        connect.setDisable(false);
-		        });
-	        });
+		        // Shutdown the client
+		        net.stop();
 
-	        mngr.registerHook(HookType.CONNECTED, packetConnection -> mngr.unregisterHook(HookType.DISCONNECTED, fail));
+		        // Enable button
+		        connect.setDisable(false);
+	        }));
+
+	        net.registerHook(HookType.CONNECTED, packetConnection -> net.unregisterHook(HookType.DISCONNECTED, fail));
         });
     }
 

@@ -13,6 +13,10 @@
     <version>0.0.1</version>
     <name>Client</name>
 
+    <properties>
+        <mainClass>net.exodiusmc.platformer.client.TransferClient</mainClass>
+    </properties>
+
     <dependencies>
 
         <!-- Shared Transfer code -->
@@ -26,6 +30,8 @@
     </dependencies>
 
     <build>
+        <finalName>${project.name}-${project.version}</finalName>
+
         <plugins>
 
             <!-- Shade Netty into le jar -->
@@ -44,9 +50,50 @@
                             <minimizeJar>true</minimizeJar>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>net.exodiusmc.platformer.client.TransferClient</mainClass>
+                                    <mainClass>${mainClass}</mainClass>
                                 </transformer>
                             </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Launch4J -->
+            <plugin>
+                <groupId>com.akathist.maven.plugins.launch4j</groupId>
+                <artifactId>launch4j-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>l4j-clui</id>
+                        <phase>package</phase>
+                        <goals><goal>launch4j</goal></goals>
+                        <configuration>
+                            <headerType>gui</headerType>
+                            <outfile>target/TransferClient-${project.version}.exe</outfile>
+                            <jar>target/${project.name}-${project.version}.jar</jar>
+                            <icon>src/main/resources/img/icon.ico</icon>
+                            <classPath>
+                                <mainClass>${mainClass}</mainClass>
+                                <addDependencies>true</addDependencies>
+                                <preCp>anything</preCp>
+                            </classPath>
+                            <jre>
+                                <minVersion>1.8.0</minVersion>
+                                <opts>
+                                    <opt>-Djava.endorsed.dirs=./endorsed</opt>
+                                </opts>
+                            </jre>
+                            <versionInfo>
+                                <fileVersion>1.0.0.0</fileVersion>
+                                <txtFileVersion>1.0.0.0</txtFileVersion>
+                                <fileDescription>Personal Chat Client</fileDescription>
+                                <copyright>Copywright © 2017 Julian Mills</copyright>
+                                <productVersion>1.0.0.0</productVersion>
+                                <txtProductVersion>1.0.0.0</txtProductVersion>
+                                <productName>TransferClient</productName>
+                                <internalName>transfer-Client</internalName>
+                                <originalFilename>original.exe</originalFilename>
+                            </versionInfo>
                         </configuration>
                     </execution>
                 </executions>
